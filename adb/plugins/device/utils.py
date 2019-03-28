@@ -43,7 +43,7 @@ class Utils(Plugin):
                 activities.append(
                     Activity(line[1].split('/')[0],
                              line[1].split('/')[1],
-                             line[-1].split('=')[-1].strip()    # 有可能行尾带'\r'
+                             line[-1].split('=')[-1].strip()  # 有可能行尾带'\r'
                              ))
 
         return activities
@@ -66,19 +66,20 @@ class Utils(Plugin):
         else:
             return MemInfo(0, 0, 0, 0, 0, 0, 0)
 
-    def get_pid(self, package_name, toybox=False):
-        # Because the version of `ps` is too much,
-        # For example, the `ps` of toybox needs `-A` to list all process, but the `ps` of emulator doesn't.
-        # So we use 'ps' and 'ps -A' to get all process information.
+    def get_pids(self) -> list:
+        result = []
+        for line in self.shell('dumpsys activity processes').split('\n'):
+            if 'PID' in line and 'ProcessRecord' in line:
+                line = ''.join(line.split()[-1].split('/')[:-1])
+                pid = int(line.split(':')[0])
+                name = ''.join(line.split(':')[1:])
+                result.append((pid, name))
+        return result
 
-        cmds = ["ps | grep {}", "ps -A | grep {}"]
-        for cmd in cmds:
-            result = self.shell(cmd.format(package_name))
-            if result:
-                break
-
-        if result:
-            return result.split()[1]
+    def get_pid(self, process_name) -> int or None:
+        for pid, name in self.get_pids():
+            if name == process_name:
+                return pid
         else:
             return None
 

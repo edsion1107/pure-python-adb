@@ -60,3 +60,22 @@ def test_get_top_activities(device):
 def test_get_top_activity(device):
     result = device.get_top_activity()
     assert isinstance(result, Activity)
+
+
+def test_get_pids(device):
+    result = device.get_pids()
+    assert result
+    for i in result:
+        pid, name = i
+        assert pid
+        assert isinstance(pid, int)
+        assert name
+        assert isinstance(name, str)
+
+
+def test_get_pid(device):
+    pid = device.get_pid('com.google.android.apps.nexuslauncher')
+    assert pid
+    assert isinstance(pid,int)
+    pid = device.get_pid('com.google.android.apps.launcher')
+    assert pid is None
